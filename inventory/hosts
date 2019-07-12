@@ -1,0 +1,14 @@
+[a42-pxc]
+lxc07 ansible_host=10.19.143.160 dnat_ip=10.19.15.160 sec_ip=10.19.64.72
+
+[a42-pxc:vars]
+ansible_user=root
+ansible_ssh_private_key_file=~/key-store/id_rsa_ansible
+px_api=10.19.143.173
+cidr=20
+omc_vlan=121
+dnat_vlan=120
+sec_vlan=119
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
