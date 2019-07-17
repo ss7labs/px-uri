@@ -1,0 +1,17 @@
+- hosts: a42pxc
+  gather_facts: no
+  vars:
+      cookie: "{{ lookup('file', '~/key-store/cookie.pxc') }}"
+      csrftoken: "{{ lookup('file', '~/key-store/csrftoken.pxc.ansible') }}"
+          
+  tasks:
+      - name: Stop CT
+        uri:
+            method: POST
+            url: "https://10.19.143.173:8006/api2/json/nodes/px8/lxc/{{ vmid }}/status/stop"
+            validate_certs: no
+            headers:
+               Cookie: "{{ cookie }}"
+               CSRFPreventionToken: "{{ csrftoken }}"
+        delegate_to: localhost
+

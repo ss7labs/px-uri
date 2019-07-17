@@ -1,10 +1,33 @@
-[a42-pxc]
-lxc07 ansible_host=10.19.143.160 dnat_ip=10.19.15.160 sec_ip=10.19.64.72
+[a42pxcprivileged]
+lxc07 ansible_host=10.19.143.160 dnat_ip=10.19.15.160 sec_ip=10.19.64.72 vmid=106
 
-[a42-pxc:vars]
+[a42pxcunprivileged]
+lxc12 ansible_host=10.19.143.155 dnat_ip=10.19.15.155 sec_ip=10.19.64.77 vmid=111
+
+#lxc08 ansible_host=10.19.143.159 dnat_ip=10.19.15.159 sec_ip=10.19.64.73 vmid=107
+#lxc09 ansible_host=10.19.143.158 dnat_ip=10.19.15.158 sec_ip=10.19.64.74 vmid=108
+#lxc10 ansible_host=10.19.143.157 dnat_ip=10.19.15.157 sec_ip=10.19.64.75 vmid=109
+#lxc11 ansible_host=10.19.143.156 dnat_ip=10.19.15.156 sec_ip=10.19.64.76 vmid=110
+#lxc13 ansible_host=10.19.143.154 dnat_ip=10.19.15.154 sec_ip=10.19.64.78 vmid=112
+#lxc14 ansible_host=10.19.143.153 dnat_ip=10.19.15.153 sec_ip=10.19.64.79 vmid=113
+#lxc15 ansible_host=10.19.143.152 dnat_ip=10.19.15.152 sec_ip=10.19.64.80 vmid=114
+#lxc16 ansible_host=10.19.143.150 dnat_ip=10.19.15.150 sec_ip=10.19.64.82 vmid=115
+
+[a42pxcprivileged:vars]
+unprivileged=0
+
+[a42pxcunprivileged:vars]
+unprivileged=1
+
+[a42pxc:children]
+a42pxcprivileged
+a42pxcunprivileged
+
+[a42pxc:vars]
 ansible_user=root
 ansible_ssh_private_key_file=~/key-store/id_rsa_ansible
 px_api=10.19.143.173
+def_gw=10.19.15.254
 cidr=20
 omc_vlan=121
 dnat_vlan=120

@@ -1,0 +1,64 @@
+- hosts: a42pxc
+  gather_facts: no
+  vars:
+      cookie: "{{ lookup('file', '~/key-store/cookie.pxc') }}"
+      csrftoken: "{{ lookup('file', '~/key-store/csrftoken.pxc.ansible') }}"
+      root_pass: "{{ lookup('file', '~/key-store/root_pass') }}"
+      packages:
+        - htop
+        - iptraf-ng
+  tasks:
+      - name: Create CT
+        uri:
+            method: POST
+            url: "https://{{ px_api }}:8006/api2/json/nodes/px8/lxc"
+            validate_certs: no
+            body: 
+              storage: fst_lvm
+              vmid: "{{ vmid }}"
+              ostemplate: shared_tmpl:vztmpl/ubuntu-16.04-a42pxc_2_amd64.tar.gz
+              password: "{{ root_pass }}"
+              memory: 512
+              cores: 1
+              swap: 512
+              onboot: 1
+              unprivileged: "{{ unprivileged }}"
+              nameserver: "10.19.143.150,8.8.8.8"
+              features: "mount=nfs;nfs"
+              hostname: "{{ inventory_hostname }}"
+              net0: "name=eth0,bridge=vmbr0,ip={{ ansible_host }}/{{ cidr }},tag={{ omc_vlan }}"
+              net1: "name=eth1,bridge=vmbr0,ip={{ dnat_ip }}/{{ cidr }},tag={{ dnat_vlan }},gw={{ def_gw }}"
+              net2: "name=eth2,bridge=vmbr0,ip={{ sec_ip }}/{{ cidr }},tag={{ sec_vlan }}"
+            body_format: form-urlencoded
+            headers:
+               Cookie: "{{ cookie }}"
+               CSRFPreventionToken: "{{ csrftoken }}"
+        delegate_to: localhost
+      - pause: seconds=8
+      - name: Start CT
+        uri:
+            method: POST
+            url: "https://{{ px_api }}:8006/api2/json/nodes/px8/lxc/{{ vmid }}/status/start"
+            validate_certs: no
+            headers:
+               Cookie: "{{ cookie }}"
+               CSRFPreventionToken: "{{ csrftoken }}"
+        delegate_to: localhost
+      - name: Remove container name from known_hosts
+        shell: ssh-keygen -R "{{ inventory_hostname }}" -f ~/.ssh/known_hosts
+        delegate_to: localhost
+      - name: Remove container IP from known_hosts
+        shell: ssh-keygen -R "{{ hostvars[inventory_hostname].ansible_host }}" -f ~/.ssh/known_hosts
+        delegate_to: localhost
+      - pause: seconds=8
+      - name: Add container to known_hosts
+        shell: ssh-keyscan -4 "{{ hostvars[inventory_hostname].ansible_host }}" >> ~/.ssh/known_hosts
+        delegate_to: localhost
+      - name: Update repositories cache and install packages
+        apt:
+            name: "{{ packages }}"
+            update_cache: yes
+
+
+
+
